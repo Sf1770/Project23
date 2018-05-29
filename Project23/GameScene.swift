@@ -13,6 +13,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var starfield: SKEmitterNode!
     var player: SKSpriteNode!
+    var touch: Bool = false
     
     var possibleEnemies = ["ball", "hammer", "tv"]
     var gameTimer: Timer!
@@ -111,9 +112,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if !isGameOver{
             
+        } else{
+            touch = false
+            gameOver()
         }
     }
-    
+
+    func gameOver(){
+        let ac = UIAlertController(title: "Game Over", message: "Would you like to play again?", preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "Yes", style: .default) {
+            [unowned self] _ in
+            self.score = 0
+            self.isGameOver = false
+            self.gotoGameScene()
+        })
+        ac.addAction(UIAlertAction(title: "No", style: .cancel) {
+            [unowned self,ac] _ in
+            ac.dismiss(animated: true, completion: nil)
+        })
+        self.view?.window?.rootViewController?.present(ac, animated: true, completion: nil)
+    }
 
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -131,7 +149,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-       
+       touch = false
+        gameOver()
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -152,5 +171,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     }
     
+    func gotoGameScene(){
+        let gameScene: GameScene = GameScene(size: self.view!.bounds.size)
+        let transition = SKTransition.fade(withDuration: 1.0)
+        gameScene.scaleMode = SKSceneScaleMode.fill
+        self.view?.presentScene(gameScene, transition: transition)
+    }
 
 }
