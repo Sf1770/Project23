@@ -27,6 +27,7 @@
 		041F78DC20B7690A00E83C02 /* player.png in Resources */ = {isa = PBXBuildFile; fileRef = 041F78D020B7690A00E83C02 /* player.png */; };
 		041F78DD20B7690A00E83C02 /* Starfield.sks in Resources */ = {isa = PBXBuildFile; fileRef = 041F78D120B7690A00E83C02 /* Starfield.sks */; };
 		041F78DE20B7690A00E83C02 /* hammer@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 041F78D220B7690A00E83C02 /* hammer@2x.png */; };
+		041F78E020BF320F00E83C02 /* laser.wav in Resources */ = {isa = PBXBuildFile; fileRef = 041F78DF20BF320F00E83C02 /* laser.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 		041F78D020B7690A00E83C02 /* player.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = player.png; sourceTree = "<group>"; };
 		041F78D120B7690A00E83C02 /* Starfield.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Starfield.sks; sourceTree = "<group>"; };
 		041F78D220B7690A00E83C02 /* hammer@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "hammer@2x.png"; sourceTree = "<group>"; };
+		041F78DF20BF320F00E83C02 /* laser.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = laser.wav; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 			children = (
 				041F78C720B7690A00E83C02 /* tv.png */,
 				041F78C820B7690A00E83C02 /* ball.png */,
+				041F78DF20BF320F00E83C02 /* laser.wav */,
 				041F78C920B7690A00E83C02 /* explosion.sks */,
 				041F78CA20B7690A00E83C02 /* tv@2x.png */,
 				041F78CB20B7690A00E83C02 /* bigSpark.png */,
@@ -177,6 +180,7 @@
 			files = (
 				041F78D820B7690A00E83C02 /* spark.png in Resources */,
 				041F78BA20B7665600E83C02 /* Main.storyboard in Resources */,
+				041F78E020BF320F00E83C02 /* laser.wav in Resources */,
 				041F78B120B7665600E83C02 /* GameScene.sks in Resources */,
 				041F78BC20B7665800E83C02 /* Assets.xcassets in Resources */,
 				041F78BF20B7665800E83C02 /* LaunchScreen.storyboard in Resources */,
