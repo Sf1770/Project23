@@ -125,8 +125,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             gameOver()
         } else if ((firstBody.categoryBitMask == PhysicsCategory.enemy) && (secondBody.categoryBitMask == PhysicsCategory.bullet)){
             collisionWithBullets(Enemy: firstBody.node as! SKSpriteNode, Bullet: secondBody.node as! SKSpriteNode)
+            //adds to score based on the object destroyed
+            if(firstBody.node?.name == "hammer"){
+                score += 5
+            } else if (firstBody.node?.name == "ball"){
+                score += 25
+            } else if (firstBody.node?.name == "tv"){
+                score += 125
+            }
         } else if ((firstBody.categoryBitMask == PhysicsCategory.bullet) && (secondBody.categoryBitMask == PhysicsCategory.enemy)){
-            collisionWithBullets(Enemy: firstBody.node as! SKSpriteNode, Bullet: secondBody.node as! SKSpriteNode)
+            collisionWithBullets(Enemy: secondBody.node as! SKSpriteNode, Bullet: firstBody.node as! SKSpriteNode)
+            //adds to score based on the object destroyed
+            if(secondBody.node?.name == "hammer"){
+                score += 5
+            } else if (secondBody.node?.name == "ball"){
+                score += 25
+            } else if (secondBody.node?.name == "tv"){
+                score += 125
+            }
         }
         
        
