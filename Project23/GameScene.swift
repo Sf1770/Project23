@@ -9,6 +9,18 @@
 import SpriteKit
 import GameplayKit
 
+struct PhysicsCategory {
+    static let bullet : UInt32 = 0
+    static let enemy : UInt32 = 1
+    static let button : UInt32 = 2
+    static let player : UInt32 = 3
+    
+}
+
+
+//contactTestBitMask: number defining which collisions we want to be notified about
+//collisionBitMask: number defining what categories of object this node should collide with
+//categoryBitMask: number defining the type of object this is for considering collisions
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var starfield: SKEmitterNode!
@@ -49,7 +61,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player = SKSpriteNode(imageNamed: "player")
         player.position = CGPoint(x: 100, y: 384)
         player.physicsBody = SKPhysicsBody(texture: player.texture!, size: player.size)
-        player.physicsBody?.contactTestBitMask = 1
+        player.physicsBody?.contactTestBitMask = PhysicsCategory.enemy
+        player.physicsBody?.categoryBitMask = PhysicsCategory.player
         addChild(player)
         
         scoreLabel = SKLabelNode(fontNamed: "Chalkduster")
@@ -66,14 +79,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         fireBulletBtn.position = CGPoint(x: 900, y: 100)
         fireBulletBtn.physicsBody?.isDynamic = false
         fireBulletBtn.physicsBody = SKPhysicsBody(circleOfRadius: 40)
-        fireBulletBtn.physicsBody?.collisionBitMask = 0
-        fireBulletBtn.physicsBody?.categoryBitMask = 0
+        fireBulletBtn.physicsBody?.collisionBitMask = PhysicsCategory.button
+        fireBulletBtn.physicsBody?.categoryBitMask = PhysicsCategory.button
         fireBulletBtn.fillColor = .red
         
         
         addChild(fireBulletBtn)
         
-        gameTimer = Timer.scheduledTimer(timeInterval: 0.35, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
+        gameTimer = Timer.scheduledTimer(timeInterval: 0.25, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
         
         
     }
@@ -84,7 +97,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         let sprite = SKSpriteNode(imageNamed: possibleEnemies[0])
         sprite.position = CGPoint(x: 1200, y: randomDistribution.nextInt())
-        addChild(sprite)
         
         sprite.physicsBody = SKPhysicsBody(texture: sprite.texture!, size: sprite.size)
         sprite.physicsBody?.categoryBitMask = 1
@@ -92,17 +104,46 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         sprite.physicsBody?.angularVelocity = 5
         sprite.physicsBody?.linearDamping = 0
         sprite.physicsBody?.angularDamping = 0
+        sprite.name = possibleEnemies[0]
+        let action = SKAction.moveTo(x: -50, duration: 1.5)
+        let actionDone = SKAction.removeFromParent()
+        sprite.run(SKAction.sequence([action, actionDone]))
+        addChild(sprite)
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
         let explosion = SKEmitterNode(fileNamed: "explosion")!
-        explosion.position = player.position
-        addChild(explosion)
+        var firstBody = contact.bodyA
+        var secondBody = contact.bodyB
         
-        player.removeFromParent()
-        isGameOver = true
-        gameOver()
+        if((firstBody.categoryBitMask == PhysicsCategory.player) && (secondBody.categoryBitMask == PhysicsCategory.enemy)){
+            explosion.position = player.position
+            addChild(explosion)
+            
+            player.removeFromParent()
+            isGameOver = true
+            gameOver()
+        } else if ((firstBody.categoryBitMask == PhysicsCategory.enemy) && (secondBody.categoryBitMask == PhysicsCategory.bullet)){
+            collisionWithBullets(Enemy: firstBody.node as! SKSpriteNode, Bullet: secondBody.node as! SKSpriteNode)
+        } else if ((firstBody.categoryBitMask == PhysicsCategory.bullet) && (secondBody.categoryBitMask == PhysicsCategory.enemy)){
+            collisionWithBullets(Enemy: firstBody.node as! SKSpriteNode, Bullet: secondBody.node as! SKSpriteNode)
+        }
+        
+       
     }
+    
+    func collisionWithBullets(Enemy: SKSpriteNode, Bullet: SKSpriteNode){
+        print("Enemy and Bullets collide")
+        //adds explosion effect to collision between enemy and a bullet
+        let explosion = SKEmitterNode(fileNamed: "explosion")
+        explosion?.position = Enemy.position
+        addChild(explosion!)
+        
+        //removes both the enemy and bullet from the Game Scene
+        Enemy.removeFromParent()
+        Bullet.removeFromParent()
+    }
+    
     
     func touchDown(atPoint pos : CGPoint) {
         if let n = self.spinnyNode?.copy() as! SKShapeNode? {
@@ -171,7 +212,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch: AnyObject in touches {
             let location = touch.location(in: self)
-            if fireBulletBtn.contains(location){
+            if fireBulletBtn.contains(location) && !isGameOver{
+                //fires a bullet button is tapped
+                //bug: fires a bullet even the player is destroyed
                 makeBullet()
                 print("tapped!")
             }
@@ -205,29 +248,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func makeBullet(){
-        var bullet: SKNode
+        var bullet: SKSpriteNode
         
         bullet = SKSpriteNode(color: SKColor.cyan, size: bulletSize)
         bullet.zPosition = -5
         bullet.position = CGPoint(x: player.position.x, y: player.position.y)
-        let action = SKAction.moveTo(x: self.size.width, duration: 0.6)
-        bullet.run(SKAction.repeatForever(action))
+        let action = SKAction.moveTo(x: self.size.width + 30, duration: 0.6)
+        let actionDone = SKAction.removeFromParent()
+        //downloaded a sound file to be played whenever a laser is fired
+        let soundAction = SKAction.playSoundFileNamed("laser.wav", waitForCompletion: true)
+        //removes excess lasers from the scene when they are out view and plays the laser sound at the same time as the laser being fired.
+        bullet.run(SKAction.sequence([SKAction.group([action, soundAction]), actionDone]))
+        bullet.physicsBody = SKPhysicsBody(rectangleOf: bulletSize)
+        bullet.physicsBody?.categoryBitMask = PhysicsCategory.bullet
+        bullet.physicsBody?.contactTestBitMask = PhysicsCategory.enemy
+        bullet.physicsBody?.affectedByGravity = false
+        bullet.physicsBody?.isDynamic = false //fixed the problem the of the lasers being shot at different angles, no longer affected by outside forces like friction, collisions, etc.
         //bullet.name = shipBulletName
         self.addChild(bullet)
     }
     
-    func fireBullet(bullet: SKNode, toDestination destination: CGPoint, withDuration duration:CFTimeInterval, andSoundFileName soundName: String){
-        let bulletAction = SKAction.sequence([
-            SKAction.move(to: destination, duration: duration),
-            SKAction.wait(forDuration: 3.0/60.0),
-            SKAction.removeFromParent()])
-        
-        let soundAction = SKAction.playSoundFileNamed(soundName, waitForCompletion: true)
-        
-        bullet.run(SKAction.group([bulletAction, soundAction]))
-        
-        addChild(bullet)
-    }
+
     
 //    func fireShipBullets() {
 //        let existingBullet = childNode(withName: shipBulletName)
